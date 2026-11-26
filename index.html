@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#0f766e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Yane</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<!-- برنامه فقط آنلاین کار می‌کند: صفحه‌ی «اینترنت قطع است» (شروع برنامه) و نوار هشدار (وسط کار) -->
+<div id="screen-offline" class="offline-screen" hidden>
+  <div class="offline-card">
+    <div class="offline-icon">📡</div>
+    <h1 class="offline-title">اینترنت قطع است</h1>
+    <p class="offline-sub">برای استفاده از برنامه به اینترنت وصل شو. بعد از وصل شدن، خودکار ادامه می‌دهد.</p>
+  </div>
+</div>
+<div id="offline-bar" class="offline-bar" role="alert" hidden>اینترنت قطع است؛ برای ادامه به اینترنت وصل شو</div>
+
+<!-- صفحه راه‌اندازی سیستم ورود (وقتی پیکربندی Supabase ناقص باشد) -->
+<div id="screen-setup" class="login-screen" hidden>
+  <div class="login-card">
+    <div class="login-logo">🔐</div>
+    <h1 class="login-title">راه‌اندازی سیستم ورود</h1>
+    <p class="login-sub">برای فعال‌سازی ورود کاربران، اتصال به سرویس Supabase لازم است. مقادیر را از Supabase → Settings → API کپی کنید.</p>
+    <div class="set-row">
+      <label for="setup-url">Supabase URL</label>
+      <input type="text" id="setup-url" placeholder="https://XXXX.supabase.co" dir="ltr" style="text-align:left" autocomplete="off">
+    </div>
+    <div class="set-row">
+      <label for="setup-key">Supabase anon key</label>
+      <input type="text" id="setup-key" placeholder="eyJhbGciOi..." dir="ltr" style="text-align:left" autocomplete="off">
+    </div>
+    <div id="setup-status" class="login-status" hidden></div>
+    <button class="btn btn-primary btn-lg" id="setup-save" style="margin-top:6px">ذخیره و ادامه</button>
+    <div class="info-note" style="margin-top:12px">
+      ورود الزامی است؛ بدون حساب کاربری امکان استفاده از برنامه وجود ندارد. کلید anon عمومی است؛ امنیت و جداسازی اطلاعات هر کاربر با Row Level Security در سرور تضمین می‌شود. راهنمای کامل در README پروژه.
+    </div>
+  </div>
+</div>
+
+<!-- صفحه ورود / ساخت حساب (فقط وقتی Backend فعال باشد) -->
+<div id="screen-login" class="login-screen lg-screen" hidden>
+  <div class="lg-wrap">
+    <div class="lg-brand">
+      <div class="lg-logo"><svg width="64" height="64" viewBox="0 0 100 100"><rect width="100" height="100" rx="23" fill="#fff"/><g transform="translate(2 1.5)"><path d="M50 11 L74 29 V51 H26 V29 Z" fill="#0f766e" stroke="#0f766e" stroke-width="3.5" stroke-linejoin="round"/><circle cx="50" cy="35" r="6" fill="#fff"/><rect x="46" y="50" width="8" height="35" rx="3" fill="#0f766e"/><rect x="53" y="64" width="12" height="6.5" rx="2" fill="#f59e0b"/><rect x="53" y="75" width="8.5" height="6.5" rx="2" fill="#f59e0b"/></g></svg></div>
+      <h1 class="lg-title">Yane</h1>
+      <p class="lg-sub">مدیریت فایل، مشتری و آگهی ملک</p>
+    </div>
+    <div class="lg-card">
+      <div class="lg-tabs" role="tablist">
+        <button type="button" id="lg-tab-login" class="on" role="tab" aria-selected="true">ورود</button>
+        <button type="button" id="lg-tab-register" role="tab" aria-selected="false">ساخت حساب</button>
+      </div>
+      <div class="lg-field" id="lg-name-row" hidden>
+        <label for="login-name">نام</label>
+        <div class="lg-in">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>
+          <input type="text" id="login-name" placeholder="مثلاً: احمدی" autocomplete="off">
+        </div>
+      </div>
+      <div class="lg-field">
+        <label for="login-email">ایمیل</label>
+        <div class="lg-in">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 8l9 6 9-6"/></svg>
+          <input type="email" id="login-email" inputmode="email" dir="ltr" placeholder="you@example.com" autocomplete="off">
+        </div>
+      </div>
+      <div class="lg-field">
+        <label for="login-pass">رمز عبور</label>
+        <div class="lg-in">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
+          <input type="password" id="login-pass" dir="ltr" placeholder="••••••••">
+          <button type="button" id="lg-eye" class="lg-eye" aria-label="نمایش رمز">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="login-status" class="login-status" hidden></div>
+      <button class="lg-cta" id="login-submit">ورود به حساب</button>
+      <button class="lg-cta" id="register-submit" hidden>ساخت حساب جدید</button>
+      <div class="lg-steps" id="lg-steps" hidden>
+        <h4>بعد از ساخت حساب</h4>
+        <div class="lg-step"><i>۱</i><div><b>ساخت حساب</b> را بزن و نام، ایمیل و رمز را وارد کن.</div></div>
+        <div class="lg-step"><i>۲</i><div><b>لینک تأیید</b> را در ایمیلت بزن (پوشه‌ی اسپم را هم ببین).</div></div>
+        <div class="lg-step"><i>۳</i><div>به برنامه برگرد و <b>وارد شو</b>.</div></div>
+      </div>
+    </div>
+    <div class="lg-foot">
+      <button id="install-fab" class="lg-install" type="button" hidden>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+        نصب برنامه روی گوشی
+      </button>
+      <a id="lg-dl" class="lg-dl" href="download.html" hidden>دانلود نسخه‌ی اندروید و راهنمای نصب</a>
+      <div class="lg-trust">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+        اطلاعات هر حساب جدا و خصوصی است
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+
+  <header id="topbar">
+    <button id="btn-back" class="icon-btn" aria-label="بازگشت" hidden>
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <span id="topbar-icon" class="tb-icon" aria-hidden="true" hidden></span>
+    <div id="topbar-head"><h1 id="topbar-title">Yane</h1><div id="topbar-sub" class="tb-sub"></div></div>
+    <button type="button" id="hh-help" class="hh-help" aria-label="آموزش"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 9L12 4 2 9l10 5z"/><path d="M6 11.2V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-4.8M22 9v6"/></svg><span>آموزش</span><i class="hh-dot" aria-hidden="true"></i></button>
+    <div id="topbar-actions"></div>
+  </header>
+
+  <main id="main">
+
+    <!-- ================= صفحه اصلی ================= -->
+    <section id="screen-home" class="screen active">
+      <div id="hh-tip" class="hh-tip" hidden><span>اولین بار است؟ آموزش تصویری هر بخش را از دکمه‌ی «آموزش» ببین.</span><button type="button" id="hh-tip-ok">باشه</button></div>
+      <div class="home-search">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="home-search" type="search" placeholder="جستجوی سریع محصول (نام یا کد)…" autocomplete="off" enterkeyhint="search">
+        </div>
+      </div>
+
+      <div id="home-stats" class="home-stats"></div>
+
+      <div id="today-box"></div>
+      <div class="home-grid">
+        <button class="home-card home-card-wide" data-action="clients">
+          <span class="hc-icon i-indigo"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3.2 3.2 0 010 5.6M18 14.4c1.8.8 3 2.6 3 5.6"/></svg></span>
+          <span class="hc-text">
+            <span class="hc-title">مشتری‌ها</span>
+            <span id="cl-badge" class="hc-sub">CRM مشاور</span>
+          </span>
+          <span id="cl-dot" class="hc-dot" hidden></span>
+        </button>
+        <button class="home-card" data-action="search">
+          <span class="hc-icon i-teal"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></span>
+          <span class="hc-title">جستجوی محصول</span>
+          <span class="hc-sub">نام یا کد کالا</span>
+        </button>
+        <button class="home-card" data-action="warehouse">
+          <span class="hc-icon i-indigo"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-5 9 5v11a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><path d="M3 9v3m18-3v3M9 21v-6h6v6"/></svg></span>
+          <span class="hc-title">مشاهده انبار</span>
+          <span class="hc-sub">لیست موجودی کامل</span>
+        </button>
+        <button class="home-card" data-action="order">
+          <span class="hc-icon i-amber"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/><path d="M2 3h3l2.6 12.4a1.6 1.6 0 001.6 1.3h8.9a1.6 1.6 0 001.5-1.2L21 8H6"/></svg></span>
+          <span class="hc-title">ثبت سفارش</span>
+          <span class="hc-sub">سبد سفارش فعلی</span>
+        </button>
+        <button class="home-card" data-action="orders">
+          <span class="hc-icon i-rose"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>
+          <span class="hc-title">سفارش‌های ثبت‌شده</span>
+          <span class="hc-sub">تاریخچه سفارش‌ها</span>
+        </button>
+        <button class="home-card home-card-wide" data-action="archive">
+          <span class="hc-icon i-violet"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v4H3z"/><path d="M5 10v9a1 1 0 001 1h12a1 1 0 001-1v-9"/><path d="M10 14h4"/></svg></span>
+          <span class="hc-text">
+            <span class="hc-title">آرشیو داروخانه‌ها</span>
+            <span class="hc-sub">پرونده دائمی سفارش‌های هر داروخانه</span>
+          </span>
+        </button>
+        <button class="home-card" data-action="weekly-visits">
+          <span class="hc-icon i-sky"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M8 14h2M8 17h2M14 14h2M14 17h2"/></svg></span>
+          <span class="hc-title">برنامه هفتگی ویزیت</span>
+          <span id="wv-badge" class="hc-sub"></span>
+        </button>
+        <button class="home-card" data-action="files">
+          <span class="hc-icon i-sky"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v13a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1h10z"/><path d="M15 3v4h4"/></svg></span>
+          <span class="hc-title">مدیریت فایل‌های انبار</span>
+          <span class="hc-sub">وارد کردن / جایگزینی فایل</span>
+        </button>
+        <button class="home-card" data-action="listings">
+          <span class="hc-icon i-teal"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span>
+          <span class="hc-title">فایل‌ها</span>
+          <span class="hc-sub">ملک‌های من</span>
+        </button>
+        <button class="home-card" data-action="ad">
+          <span class="hc-icon i-amber"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 2v6h6M12 12v6M9 15h6"/></svg></span>
+          <span class="hc-title">ساخت آگهی</span>
+          <span id="ad-badge" class="hc-sub">ساخت آگهی</span>
+        </button>
+        <button class="home-card" data-action="collab">
+          <span class="hc-icon i-sky"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><path d="M2 20c0-3 3-5 6-5s6 2 6 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.3c3 .3 5.5 2 5.5 5.7"/></svg></span>
+          <span class="hc-title">همکاری‌ها</span>
+          <span id="cb-badge" class="hc-sub">فایل‌های تعاملی و درخواست‌ها</span>
+        </button>
+        <button class="home-card" data-action="converter">
+          <span class="hc-icon i-teal"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M3 7h18"/><path d="M7 21l-4-4 4-4"/><path d="M21 17H3"/></svg></span>
+          <span class="hc-title">تبدیل رهن و اجاره</span>
+          <span class="hc-sub">محاسبه‌ی فوری و کارت</span>
+        </button>
+        <button class="home-card" data-action="quick-note">
+          <span class="hc-icon i-rose"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0"/><path d="M12 18v4"/></svg></span>
+          <span class="hc-title">برنامه روزانه</span>
+          <span class="hc-sub">کارهای امروز و بعد</span>
+        <span id="dp-dot" class="hc-dot warn" hidden></span>
+        </button>
+        <button class="home-card" data-action="deals">
+          <span class="hc-icon i-teal"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></svg></span>
+          <span class="hc-title">قراردادها</span>
+          <span class="hc-sub">رادار تمدید و پیام‌ها</span>
+        </button>
+        <button class="home-card" data-action="card-views">
+          <span class="hc-icon i-rose"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+          <span class="hc-title">بازدیدها</span>
+          <span class="hc-sub">کارت ملک و لینک‌ها</span>
+        </button>
+        <button class="home-card" data-action="estelam">
+          <span class="hc-icon i-slate"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg></span>
+          <span class="hc-title">استعلام</span>
+          <span class="hc-sub">تسویه و حساب داروخانه‌ها (شخصی)</span>
+        </button>
+        <button class="home-card" data-action="target-pharmacies">
+          <span class="hc-icon i-emerald"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg></span>
+          <span class="hc-title">داروخانه‌های هدف</span>
+          <span id="tp-badge" class="hc-sub"></span>
+        </button>
+        <button class="home-card" data-action="suggest-names" id="home-suggest-names" hidden>
+          <span class="hc-icon i-emerald"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor"/></svg></span>
+          <span class="hc-title">اسم‌های پیشنهادی</span>
+          <span class="hc-sub">اسم‌هایی که داروخانه‌ها می‌گویند</span>
+        </button>
+        <button class="home-card" data-action="product-attrs" id="home-product-attrs" hidden>
+          <span class="hc-icon i-emerald"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span>
+          <span class="hc-title">مشخصه‌های محصول</span>
+          <span id="at-badge" class="hc-sub">نوع، نوع پوست، حجم</span>
+        </button>
+        <button class="home-card" data-action="settings">
+          <span class="hc-icon i-slate"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h.01a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h.01a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.01a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
+          <span class="hc-title">تنظیمات</span>
+          <span class="hc-sub">واحد قیمت، نام انبارها</span>
+        </button>
+      </div>
+
+      <div class="home-foot">نسخه ۱٫۳ — سیستم حساب کاربری</div>
+    </section>
+
+    <!-- ================= جستجو / مشاهده انبار ================= -->
+    <section id="screen-products" class="screen">
+      <div id="tag-bars" class="tag-card" hidden>
+        <div class="tag-head">
+          <span class="tag-title">🏷 برند</span>
+          <span class="tag-actions">
+            <button type="button" class="tag-ib" data-tag-add="brand" aria-label="افزودن برند">＋</button>
+            <button type="button" class="tag-ib" id="tag-manage-brand" data-tag-manage="brand" aria-label="مدیریت برندها" hidden>⚙</button>
+          </span>
+        </div>
+        <div class="tag-bar-chips" id="tag-chips-brand"></div>
+        <div class="tag-sub" id="tag-sub" hidden>
+          <div class="tag-head">
+            <span class="tag-title" id="tag-sub-title"></span>
+            <span class="tag-actions">
+              <button type="button" class="tag-ib tag-ib-sm" data-tag-add="category" aria-label="افزودن دسته">＋</button>
+              <button type="button" class="tag-ib tag-ib-sm" id="tag-manage-category" data-tag-manage="category" aria-label="مدیریت دسته‌ها" hidden>⚙</button>
+            </span>
+          </div>
+          <div class="tag-bar-chips" id="tag-chips-category"></div>
+        </div>
+      </div>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="prod-search" type="search" placeholder="جستجو: نام محصول یا کد کالا…" autocomplete="off" enterkeyhint="search">
+      </div>
+      <div class="chip-row" id="wh-chips">
+        <button class="chip active" data-wh="all">هر دو انبار</button>
+        <button class="chip" data-wh="1">انبار ۱</button>
+        <button class="chip" data-wh="2">انبار ۲</button>
+      </div>
+      <div id="prod-count" class="result-count"></div>
+      <div class="table-wrap">
+        <table class="prod-table">
+          <thead>
+            <tr>
+              <th class="col-code">کد کالا</th>
+              <th class="col-name">نام محصول</th>
+              <th class="col-stock">موجودی</th>
+              <th class="col-price">قیمت</th>
+              <th class="col-add"></th>
+            </tr>
+          </thead>
+          <tbody id="prod-tbody"></tbody>
+        </table>
+      </div>
+      <div id="prod-empty" class="empty-state" hidden>
+        <div class="empty-icon">📦</div>
+        <p id="prod-empty-text">محصولی پیدا نشد.</p>
+        <p class="empty-sub">بخش دیگری از نام یا کد را امتحان کنید.</p>
+      </div>
+    </section>
+
+    <!-- ================= ثبت سفارش (سبد) ================= -->
+    <section id="screen-order" class="screen">
+      <div class="set-card" id="order-info">
+        <div class="set-title">اطلاعات سفارش</div>
+        <div class="set-row">
+          <label for="oi-visitor">نام ویزیتور</label>
+          <input type="text" id="oi-visitor" placeholder="مثلاً: احمدی" autocomplete="off">
+        </div>
+        <div class="set-row">
+          <label for="oi-pharmacy">نام داروخانه</label>
+          <input type="text" id="oi-pharmacy" placeholder="مثلاً: داروخانه رضایی" autocomplete="off">
+        </div>
+        <div class="set-row">
+          <label for="oi-address">آدرس داروخانه</label>
+          <input type="text" id="oi-address" placeholder="خیابان، پلاک…" autocomplete="off">
+        </div>
+        <div class="set-row">
+          <label for="oi-area">منطقه/خیابان (برای دسته‌بندی آرشیو)</label>
+          <input type="text" id="oi-area" placeholder="مثلاً: منطقه ۵ یا خیابان ولیعصر" autocomplete="off">
+        </div>
+        <div class="set-row">
+          <label for="oi-phone">شماره تلفن داروخانه</label>
+          <input type="tel" id="oi-phone" inputmode="tel" placeholder="۰۲۱…" autocomplete="off">
+        </div>
+        <div class="set-row">
+          <label for="oi-note">توضیحات</label>
+          <textarea id="oi-note" rows="2" placeholder="اختیاری"></textarea>
+        </div>
+        <div class="set-row">
+          <label for="oi-offer">آفر (توضیح تجاری)</label>
+          <input type="text" id="oi-offer" list="offer-list" placeholder="مثلاً: ۱۰٪ تخفیف، یک عدد هدیه…" autocomplete="off">
+          <datalist id="offer-list"></datalist>
+        </div>
+      </div>
+      <div id="order-items"></div>
+      <div id="order-empty" class="empty-state" hidden>
+        <div class="empty-icon">🛒</div>
+        <p>سبد سفارش خالی است.</p>
+        <p class="empty-sub">از بخش جستجو یا مشاهده انبار، محصولات را اضافه کنید.</p>
+      </div>
+      <div id="order-summary" class="order-summary" hidden>
+        <div class="os-row">
+          <span>تعداد اقلام</span><strong id="order-count">۰</strong>
+        </div>
+        <div class="os-row os-total">
+          <span>مبلغ نهایی سفارش</span><strong id="order-total">۰ تومان</strong>
+        </div>
+      </div>
+      <div id="order-actions" class="order-actions" hidden>
+        <button id="btn-save-order" class="btn btn-primary btn-lg">ثبت سفارش</button>
+        <button id="btn-clear-order" class="btn btn-ghost btn-lg">خالی کردن سبد</button>
+      </div>
+    </section>
+
+    <!-- ================= سفارش‌های قبلی ================= -->
+    <section id="screen-orders" class="screen">
+      <div id="orders-sync-banner" class="ci-warn danger" hidden style="margin-bottom:10px"></div>
+      <div class="search-box" style="margin-bottom:10px">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="orders-search" type="search" placeholder="جستجو: نام داروخانه، ویزیتور یا شماره سفارش…" autocomplete="off" enterkeyhint="search">
+      </div>
+      <button id="btn-orders-trash" class="btn btn-ghost btn-sm" style="width:100%;margin-bottom:10px">🗑 سطل زباله (سفارش‌های حذف‌شده)</button>
+      <div id="orders-list"></div>
+      <div id="orders-empty" class="empty-state" hidden>
+        <div class="empty-icon">🧾</div>
+        <p>هنوز سفارشی ثبت نشده است.</p>
+      </div>
+      <div id="orders-search-empty" class="empty-state" hidden>
+        <div class="empty-icon">🔍</div>
+        <p>سفارشی مطابق جستجو پیدا نشد.</p>
+      </div>
+      <button id="orders-load-more" class="btn btn-ghost btn-sm" style="width:100%;margin-top:10px" hidden>بارگذاری سفارش‌های قدیمی‌تر</button>
+    </section>
+
+    <!-- ================= سطل زبالهٔ سفارش‌ها ================= -->
+    <section id="screen-orders-trash" class="screen">
+      <div class="ci-warn" style="margin-bottom:10px">⏳ سفارش‌های این‌جا حداکثر ۷ روز نگه داشته می‌شن، بعدش خودکار و برای همیشه پاک می‌شن.</div>
+      <button id="btn-trash-clear-all" class="btn btn-danger btn-sm" style="width:100%;margin-bottom:10px" hidden>🗑 پاک کردن همه (برای همیشه)</button>
+      <div id="orders-trash-list"></div>
+      <div id="orders-trash-empty" class="empty-state" hidden>
+        <div class="empty-icon">🗑</div>
+        <p>سطل زباله خالی است.</p>
+      </div>
+    </section>
+
+    <!-- ================= برنامه هفتگی ویزیت ================= -->
+    <section id="screen-weekly-visits" class="screen">
+      <div class="wv-weekbar">
+        <div class="wv-seg" id="wv-week-seg"></div>
+        <div class="wv-range" id="wv-week-range"></div>
+      </div>
+      <div class="chip-row" id="wv-day-chips"></div>
+      <div id="wv-tools" class="wv-tools">
+        <button id="btn-wv-add" class="btn btn-primary">➕ افزودن</button>
+        <button id="btn-wv-bulk" class="btn btn-ghost">📋 چندتایی</button>
+        <button id="btn-wv-tpl" class="btn btn-ghost">💾 برنامه‌ها</button>
+        <button id="btn-wv-select" class="btn btn-ghost">☑ انتخاب</button>
+      </div>
+      <div id="wv-selbar" class="wv-selbar" hidden>
+        <button id="wv-sel-exit" class="btn btn-ghost" aria-label="خروج از انتخاب">✕</button>
+        <b id="wv-sel-count"></b>
+        <button id="wv-sel-all" class="btn btn-ghost">انتخاب همه</button>
+      </div>
+      <div id="wv-list"></div>
+      <button id="btn-wv-clear-day" class="btn btn-ghost" hidden style="width:100%;margin-top:12px;color:var(--danger)"></button>
+      <div id="wv-empty" class="empty-state" hidden>
+        <div class="empty-icon">📅</div>
+        <p>برای این روز هنوز موردی ثبت نشده است.</p>
+      </div>
+      <div id="wv-bottombar" class="wv-bottombar" hidden>
+        <button id="wv-sel-move" class="btn btn-primary">↔ انتقال</button>
+        <button id="wv-sel-addweeks" class="btn btn-ghost">🗓 هفته‌ها</button>
+        <button id="wv-sel-del" class="btn btn-danger">🗑 حذف</button>
+      </div>
+    </section>
+
+    <!-- ================= داروخانه‌های هدف ================= -->
+    <!-- ================= پرونده‌ی مشتری: لیست ================= -->
+    <!-- ================= فایل‌ها: لیست ================= -->
+    <section id="screen-listings" class="screen">
+      <button id="btn-ls-add" class="rd-fab" aria-label="فایل جدید">فایل جدید</button>
+      <div class="lr-tools"><input id="ls-search" type="search" placeholder="جستجو: محله یا ویژگی" autocomplete="off"></div>
+      <div id="ls-filters" class="seg2"></div>
+      <div id="ls-list"></div>
+      <div id="ls-empty" class="empty-state" hidden><div class="empty-icon">🏠</div><p>هنوز فایلی ثبت نشده است.</p></div>
+    </section>
+
+    <!-- ================= فایل‌ها: جزئیات ================= -->
+    <section id="screen-listing" class="screen">
+      <div id="ls-detail"></div>
+    </section>
+
+    <section id="screen-tutorial" class="screen">
+      <div id="hp-root"></div>
+    </section>
+
+    <section id="screen-subscription" class="screen">
+      <div id="sub-root"></div>
+    </section>
+
+    <section id="screen-ad" class="screen">
+      <div id="ad-root"></div>
+    </section>
+
+    <section id="screen-collab" class="screen">
+      <div id="cb-tabs" class="rd-seg rd-tabs"></div>
+      <input id="cb-search" type="search" placeholder="جستجو: محله یا ویژگی" autocomplete="off" style="width:100%">
+      <div id="cb-filters" class="chip-row"></div>
+      <div id="cb-list"></div>
+      <div id="cb-empty" class="empty-state" hidden><div class="empty-icon">🤝</div><p>فایل تعاملی‌ای نیست.</p></div>
+    </section>
+
+    <section id="screen-clients" class="screen">
+      <button id="btn-cl-add" class="rd-fab" aria-label="مشتری جدید">مشتری جدید</button>
+      <div class="lr-tools"><input id="cl-search" type="search" placeholder="جستجو: نام، شماره، محله" autocomplete="off"><button type="button" id="cl-filter" class="lr-fbtn" aria-label="فیلتر مرحله"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><i class="lr-dot" hidden></i></button></div>
+      <div id="cl-stages" class="seg2"></div>
+      <div id="cl-list"></div>
+      <div id="cl-empty" class="empty-state" hidden>
+        <div class="empty-icon">👥</div>
+        <p>هنوز مشتری‌ای ثبت نشده است.</p>
+      </div>
+    </section>
+
+    <!-- ================= پرونده‌ی مشتری: جزئیات ================= -->
+    <section id="screen-client" class="screen">
+      <div id="cl-detail"></div>
+    </section>
+
+    <section id="screen-card-views" class="screen">
+      <div id="cw-guard" class="info-note" style="margin:8px 0"></div>
+      <div id="cw-body">
+        <button type="button" id="cw-notify" class="slim-row"><span class="slim-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 16V11a6 6 0 10-12 0v5l-2 2h16zM10 21h4"/></svg></span><b>اعلان بازدید</b><small>وقتی اپ بسته است</small><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div id="cw-summary" class="seg2"></div>
+        <div id="cw-list"></div>
+      </div>
+    </section>
+
+    <section id="screen-deals" class="screen">
+      <div id="dl-guard" class="info-note" style="margin:8px 0"></div>
+      <div id="dl-body">
+        <div id="dl-tabs" class="rd-seg rd-tabs"></div>
+        <button type="button" id="dl-add" class="rd-fab">ثبت معامله / قرارداد</button>
+        <div id="dl-list"></div>
+        <details id="dl-settings" class="set-row" style="margin-top:14px">
+          <summary>تنظیمات (فاصله‌ی یادآوری و متن پیام‌ها)</summary>
+          <div class="info-note" style="margin:8px 0">در متن می‌توانی از {name} (نام)، {property} (ملک)، {days} (روز مانده) و {agency} (نام مشاوره) استفاده کنی.</div>
+          <div class="set-row"><label>یادآوری تمدید: چند روز قبل از پایان قرارداد؟</label>
+            <input type="text" id="dl-lead" inputmode="numeric" autocomplete="off"></div>
+        <div class="set-row"><label>پیام ۱ ماه بعد از معامله</label><textarea id="dl-tpl-m1" rows="3" style="width:100%;resize:vertical"></textarea></div>
+        <div class="set-row"><label>پیام ۶ ماه بعد</label><textarea id="dl-tpl-m6" rows="3" style="width:100%;resize:vertical"></textarea></div>
+        <div class="set-row"><label>پیام ۱۲ ماه بعد (درخواست معرفی)</label><textarea id="dl-tpl-m12" rows="3" style="width:100%;resize:vertical"></textarea></div>
+        <div class="set-row"><label>تمدید — پیام به مستأجر</label><textarea id="dl-tpl-renewTenant" rows="3" style="width:100%;resize:vertical"></textarea></div>
+        <div class="set-row"><label>تمدید — پیام به مالک</label><textarea id="dl-tpl-renewOwner" rows="3" style="width:100%;resize:vertical"></textarea></div>
+          <button type="button" class="btn btn-primary" id="dl-save-settings">ذخیره‌ی تنظیمات</button>
+        </details>
+      </div>
+    </section>
+
+    <section id="screen-quick-note" class="screen" data-tab="plan">
+      <div id="qn-guard" class="info-note" style="margin:8px 0"></div>
+      <div id="qn-body">
+        <div class="set-row"><label>مشتری</label>
+          <div id="qn-clients" class="chip-row" style="margin:0 0 8px;flex-wrap:wrap"></div>
+          <input type="search" id="qn-search" placeholder="جستجوی مشتری (نام یا شماره)" autocomplete="off" style="width:100%"></div>
+        <div class="set-row"><label>نوع</label>
+          <div id="qn-kinds" class="chip-row" style="margin:0;flex-wrap:wrap"></div></div>
+        <div class="set-row"><label>یادداشت (با میکروفون کیبورد حرف بزن)</label>
+          <textarea id="qn-text" rows="5" style="width:100%;resize:vertical" placeholder="مثلاً: آشپزخانه را دوست داشت ولی از قیمت ناراضی بود، فردا جواب همسرش را بپرس"></textarea></div>
+        <div class="set-row"><label>پیگیری بعدی</label>
+          <div id="qn-fu-chips" class="chip-row" style="margin:0 0 6px;flex-wrap:wrap"></div>
+          <div id="qn-fu-custom" hidden style="margin:6px 0"></div>
+          <div id="qn-fu-info" class="oc-sub"></div></div>
+        <button type="button" id="qn-save" class="btn btn-primary btn-lg">ثبت یادداشت و پیگیری</button>
+        <div id="qn-msg" class="oc-sub" style="margin-top:10px;color:var(--ok);font-weight:700"></div>
+      </div>
+
+      <!-- برنامه‌ی روزانه: تب دوم؛ ماژول جدا (daily-plan.js)، فقط شناسه‌های dp-* -->
+      <div id="dp-body" class="dp">
+        <div id="dp-guard" class="info-note" hidden></div>
+        <div id="dp-main">
+          <div class="dp-card dp-compose">
+            <div class="dp-compose-h">برنامه را بگو یا بنویس</div>
+            <div class="mic-field"><textarea id="dp-text" rows="4" placeholder="مثلاً: فردا ساعت ده بازدید پونک با آقای احمدی، ظهر زنگ بزن به خانم رضایی، ساعت پنج جلسه با مالک"></textarea><button type="button" id="dp-mic" class="mic-btn" aria-label="شروع گفتن" aria-pressed="false" hidden></button></div>
+            <div id="dp-mic-status" class="mic-status" aria-live="polite"></div>
+            <div id="dp-mic-hint" class="mic-hint" hidden>میکروفون این مرورگر پشتیبانی نمی‌شود؛ از میکروفون کیبورد گوشی استفاده کن.</div>
+            <div class="dp-actions"><button type="button" class="btn btn-primary" id="dp-analyze">تحلیل و افزودن به برنامه</button><button type="button" class="btn btn-ghost" id="dp-clear">پاک کردن</button></div>
+          </div>
+              <div id="dp-nav" class="dp-nav"></div>
+          <div id="dp-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-converter" class="screen">
+      <div class="cv-set"><span id="cv-setsum"></span><button type="button" id="cv-gear" class="cv-gear">⚙ تنظیمات</button></div>
+      <details id="cv-settings" class="rd-card rd-static cv-details">
+        <summary>تنظیمات (ضریب، نام و لوگو)</summary>
+        <div class="set-row"><label>ضریب تبدیل: هر ۱ میلیون اجاره = چند میلیون رهن؟ *</label>
+          <input type="text" id="cv-ratio" inputmode="decimal" autocomplete="off" placeholder="مثلاً ۳۰"></div>
+        <div class="set-row"><label>پله‌ی تغییر رهن در جدول (میلیون تومان)</label>
+          <input type="text" id="cv-step" inputmode="decimal" autocomplete="off"></div>
+        <div class="set-row"><label>نام مشاوره‌ی املاک (روی کارت)</label>
+          <input type="text" id="cv-agency" autocomplete="off"></div>
+        <div class="set-row"><label>لوگو (اختیاری)</label>
+          <div style="display:flex;gap:10px;align-items:center"><span id="cv-logo-preview"></span>
+            <input type="file" id="cv-logo" accept="image/*" style="flex:1;min-width:0">
+            <button type="button" class="btn btn-ghost btn-sm" id="cv-logo-clear" style="display:none">حذف</button></div></div>
+        <button type="button" class="btn btn-primary" id="cv-save-settings">ذخیره‌ی تنظیمات</button>
+      </details>
+      <div class="rd-card rd-static cv-card"><div class="cv-st"><span class="cv-n">۱</span><b>شرایط فعلی ملک</b></div>
+        <div class="rd-pair">
+          <div class="set-row"><label for="cv-deposit">رهن</label><div class="cv-unit"><input type="text" id="cv-deposit" inputmode="decimal" autocomplete="off" placeholder="مثلاً ۱٫۵"><select class="cv-usel" id="cv-deposit-unit" aria-label="واحد رهن"><option value="b" selected>میلیارد</option><option value="m">میلیون</option><option value="t">تومان</option></select></div></div>
+          <div class="set-row"><label for="cv-rent">اجاره‌ی ماهانه</label><div class="cv-unit"><input type="text" id="cv-rent" inputmode="decimal" autocomplete="off" placeholder="مثلاً ۱۰"><i>میلیون تومان</i></div></div></div>
+        <div id="cv-eq" class="cv-eq" hidden></div></div>
+      <div class="rd-card rd-static cv-card"><div class="cv-st"><span class="cv-n">۲</span><b>می‌خوای چی تغییر کنه؟</b><small>اختیاری</small></div>
+        <div class="cv-seg" id="cv-modes"><button type="button" class="on" data-cv-mode="deposit">رهن جدید بدم</button><button type="button" data-cv-mode="rent">اجاره‌ی جدید بدم</button></div>
+        <div class="set-row" id="cv-wrap-deposit"><label for="cv-if-deposit">رهن جدید</label><div class="cv-unit"><input type="text" id="cv-if-deposit" inputmode="decimal" autocomplete="off" placeholder="مثلاً ۲"><select class="cv-usel" id="cv-if-deposit-unit" aria-label="واحد رهن جدید"><option value="b" selected>میلیارد</option><option value="m">میلیون</option><option value="t">تومان</option></select></div></div>
+        <div class="set-row" id="cv-wrap-rent" hidden><label for="cv-if-rent">اجاره‌ی جدید</label><div class="cv-unit"><input type="text" id="cv-if-rent" inputmode="decimal" autocomplete="off" placeholder="مثلاً ۱۵"><i>میلیون تومان</i></div></div></div>
+      <div id="cv-info" class="oc-sub" style="margin:6px 2px"></div>
+      <div id="cv-result"></div>
+      <div id="cv-actions" class="cv-bar" hidden>
+        <button type="button" class="rd-btn ghost cv-wa" id="cv-share-txt">واتساپ</button>
+        <button type="button" class="rd-btn primary" id="cv-share-img">ارسال کارت (تصویر)</button>
+      </div>
+    </section>
+
+    <section id="screen-estelam" class="screen">
+      <button id="btn-est-add" class="btn btn-primary" style="width:100%;margin-bottom:10px">➕ ثبت استعلام</button>
+      <input id="est-search" type="search" placeholder="جستجو: نام، منطقه یا متن" autocomplete="off" style="width:100%;margin-bottom:6px">
+      <div id="est-count" style="font-size:12px;color:var(--muted);margin:0 2px 8px"></div>
+      <div id="est-listbar" class="wv-listbar" hidden><button id="est-collapse-all" class="btn btn-ghost" type="button">▸ بستن همه</button></div>
+      <div id="est-list"></div>
+      <div id="est-empty" class="empty-state" hidden>
+        <div class="empty-icon">🧾</div>
+        <p>هنوز استعلامی ثبت نشده است.</p>
+      </div>
+    </section>
+
+    <!-- ================= مدیریت اسم‌های پیشنهادی ================= -->
+    <section id="screen-suggest-names" class="screen">
+      <div class="info-note" id="sn-note">محصول را پیدا کنید و همه‌ی اسم‌هایی را که داروخانه‌ها برایش می‌گویند ثبت کنید. این اسم‌ها برای همه‌ی کاربران در پیشنهادهای جست‌وجو استفاده می‌شوند.</div>
+      <input id="sn-search" type="search" placeholder="جستجوی محصول: نام یا کد" autocomplete="off" style="width:100%;margin:8px 0 6px">
+      <div class="sn-bar">
+        <button id="sn-sel-toggle" type="button" class="btn btn-ghost">☑️ انتخاب چند محصول</button>
+        <button id="sn-sel-all" type="button" class="btn btn-ghost" hidden>انتخاب همه‌ی نتایج</button>
+      </div>
+      <button id="sn-bulk-btn" type="button" class="btn btn-primary" hidden style="width:100%;margin-bottom:8px"></button>
+      <div id="sn-count" style="font-size:12px;color:var(--muted);margin:0 2px 8px"></div>
+      <div id="sn-list"></div>
+      <div id="sn-empty" class="empty-state" hidden><div class="empty-icon">🏷</div><p id="sn-empty-text"></p></div>
+    </section>
+
+    <!-- ================= مشخصه‌های محصول (برای جست‌وجوی دقیق‌تر) ================= -->
+    <section id="screen-product-attrs" class="screen">
+      <div class="info-note">برای هر محصول «نوع محصول» (فوم، ژل، کرم، شامپو…)، «نوع پوست» و «حجم» را تأیید کنید تا جست‌وجو بین محصولات شبیه (چرب/خشک، فوم/شامپو) اشتباه نکند. فقط مشخصه‌های «تأییدشده» روی جست‌وجو اثر دارند.</div>
+      <div id="at-stats" style="font-size:12.5px;margin:8px 2px"></div>
+      <button id="at-auto" type="button" class="btn btn-primary" style="width:100%;margin-bottom:8px">✨ ساخت پیشنهاد خودکار از روی نام محصولات</button>
+      <button id="at-newtype" type="button" class="btn btn-ghost" style="width:100%;margin-bottom:8px">➕ افزودن نوع محصول یا کاربرد جدید</button>
+      <input id="at-search" type="search" placeholder="جستجوی محصول: نام یا کد" autocomplete="off" style="width:100%;margin:0 0 6px">
+      <select id="at-filter" style="width:100%;margin-bottom:8px">
+        <option value="suggested">پیشنهادی (منتظر تأیید)</option>
+        <option value="incomplete">ناقص (نوع محصول نامشخص)</option>
+        <option value="confirmed">تأییدشده</option>
+      </select>
+      <div id="at-list"></div>
+      <div id="at-empty" class="empty-state" hidden><div class="empty-icon">🧪</div><p id="at-empty-text"></p></div>
+    </section>
+
+    <section id="screen-target-pharmacies" class="screen">
+      <button id="btn-tp-add" class="btn btn-primary" style="width:100%;margin-bottom:12px">➕ افزودن داروخانه هدف</button>
+      <div id="tp-list"></div>
+      <div id="tp-empty" class="empty-state" hidden>
+        <div class="empty-icon">🎯</div>
+        <p>هنوز داروخانه هدفی ثبت نشده است.</p>
+      </div>
+    </section>
+
+    <!-- ================= جزئیات سفارش ================= -->
+    <section id="screen-order-detail" class="screen">
+      <div id="od-content"></div>
+    </section>
+
+    <!-- ================= آرشیو داروخانه‌ها ================= -->
+    <section id="screen-archive" class="screen">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="arch-search" type="search" placeholder="جستجو: نام داروخانه، تلفن، ویزیتور، شماره سفارش، تاریخ…" autocomplete="off" enterkeyhint="search">
+      </div>
+      <div id="arch-count" class="result-count"></div>
+      <div id="arch-list"></div>
+      <div id="arch-empty" class="empty-state" hidden>
+        <div class="empty-icon">🏥</div>
+        <p>هنوز داروخانه‌ای در آرشیو ثبت نشده است.</p>
+        <p class="empty-sub">با ثبت اولین سفارش، پرونده داروخانه به‌صورت خودکار ساخته می‌شود.</p>
+      </div>
+    </section>
+
+    <!-- ================= پرونده داروخانه ================= -->
+    <section id="screen-pharmacy" class="screen">
+      <div id="pharmacy-content"></div>
+    </section>
+
+    <!-- ================= ویرایش سفارش ================= -->
+    <section id="screen-edit-order" class="screen">
+      <div id="edit-content"></div>
+    </section>
+
+    <!-- ================= مدیریت فایل‌ها ================= -->
+    <section id="screen-files" class="screen">
+      <div id="files-content"></div>
+    </section>
+
+    <!-- ================= وارد کردن فایل ================= -->
+    <section id="screen-import" class="screen">
+      <div id="import-content"></div>
+    </section>
+
+    <!-- ================= تنظیمات ================= -->
+    <section id="screen-settings" class="screen">
+      <div id="settings-content"></div>
+    </section>
+
+    <!-- ================= پشتیبانی ================= -->
+    <section id="screen-support" class="screen">
+      <div id="support-root"></div>
+    </section>
+
+    <!-- ================= مدیریت کاربران (فقط مدیر) ================= -->
+    <section id="screen-admin" class="screen">
+      <div id="admin-content"></div>
+    </section>
+
+    <!-- ================= راهنما ================= -->
+    <section id="screen-help" class="screen">
+      <div class="help-card">
+        <h3>راهنمای سریع</h3>
+        <ol class="help-list">
+          <li><b>وارد کردن فایل انبار:</b> از صفحه اصلی «مدیریت فایل‌های انبار» را بزنید، انبار موردنظر را انتخاب و فایل PDF یا Excel یا CSV را از گوشی انتخاب کنید. با وارد کردن فایل جدید، فایل قبلی همان انبار جایگزین می‌شود.</li>
+          <li><b>جستجو:</b> در نوار جستجوی صفحه اصلی، نام کامل، بخشی از نام، کد کامل یا بخشی از کد محصول را بنویسید. جستجو فارسی و بدون نیاز به اینترنت است.</li>
+          <li><b>ثبت سفارش:</b> کنار هر محصول دکمه «+» را بزنید، تعداد را وارد و به سفارش اضافه کنید. در صفحه سفارش می‌توانید تعداد را تغییر دهید یا محصول را حذف کنید.</li>
+          <li><b>کنترل موجودی:</b> اگر تعداد سفارش از موجودی بیشتر باشد، هشدار نمایش داده می‌شود ولی می‌توانید سفارش را ثبت کنید.</li>
+          <li><b>خروجی سفارش:</b> در صفحه هر سفارش می‌توانید متن را کپی، در پیام‌رسان‌ها به اشتراک بگذارید یا خروجی PDF و Excel بگیرید.</li>
+          <li><b>قیمت:</b> اگر قیمت فایل به ریال باشد، به‌صورت خودکار به تومان تبدیل و فقط تومان نمایش داده می‌شود. تنظیم واحد قیمت در «تنظیمات» است.</li>
+          <li><b>آفلاین:</b> همه داده‌ها روی خود گوشی ذخیره می‌شود؛ برای جستجو و سفارش هیچ اینترنتی لازم نیست.</li>
+        </ol>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- دکمه شناور سبد -->
+<button id="cart-fab" class="cart-fab" hidden aria-label="سبد سفارش">
+  <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/><path d="M2 3h3l2.6 12.4a1.6 1.6 0 001.6 1.3h8.9a1.6 1.6 0 001.5-1.2L21 8H6"/></svg>
+  <span id="cart-fab-badge" class="fab-badge" hidden>۰</span>
+  <span id="cart-fab-total" class="fab-total" hidden></span>
+</button>
+
+<!-- ریشه‌های رابط: شیت، دیالوگ، توست -->
+<div id="sheet-root"></div>
+<div id="dialog-root"></div>
+<div id="toast-root"></div>
+<nav id="bottom-nav" aria-label="ناوبری اصلی"><button type="button" class="bn-item" data-bn="home"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>خانه</span></button><button type="button" class="bn-item" data-bn="clients"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><path d="M16 5.2a3 3 0 010 5.6M18 14.4c1.8.8 3 2.6 3 5.6"/></svg><span>مشتری‌ها</span></button><button type="button" class="bn-item" data-bn="card-views"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>بازدیدها</span></button><button type="button" class="bn-item" data-bn="settings"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg><span>تنظیمات</span></button></nav>
+<div id="alert-stack"><div id="pay-alert-root"></div><div id="card-alert-root"></div></div>
+
+<!-- ناحیه مخفی برای خروجی PDF -->
+<div id="print-area" hidden></div>
+
+<input type="file" id="file-input" accept=".pdf,.xlsx,.xls,.csv,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
+
+<script src="vendor/supabase.min.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/jdate.js"></script>
+<script src="js/config.js"></script>
+<script src="js/backend.js"></script>
+<script src="js/db.js"></script>
+<script src="js/parsers/parser-core.js"></script>
+<script src="js/parsers/csv.js"></script>
+<script src="js/parsers/excel.js"></script>
+<script src="js/parsers/pdf.js"></script>
+<script src="js/parsers/index.js"></script>
+<script src="js/search.js"></script>
+<script src="js/smart-names.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/archive.js"></script>
+
+<script src="js/aliases.js"></script>
+<script src="js/alias-seed.js"></script>
+<script src="js/packsize.js"></script>
+<script src="js/packsize-seed.js"></script>
+<script src="js/migrate-legacy-data.js"></script>
+<script src="js/customproducts.js"></script>
+<script src="js/clients-core.js"></script>
+<script src="js/listings-core.js"></script>
+<script src="js/clients.js"></script>
+<script src="js/listings.js"></script>
+<script src="js/collab.js"></script>
+<script src="js/adbuilder-core.js"></script>
+<script src="js/adbuilder.js"></script>
+<script src="js/subscription-core.js"></script>
+<script src="js/subscription.js"></script>
+<script src="js/help-core.js"></script>
+<script src="js/help.js"></script>
+<script src="js/today-core.js"></script>
+<script src="js/today.js"></script>
+<script src="js/converter-core.js"></script>
+<script src="js/converter.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/daily-plan-core.js"></script>
+<script src="js/quicknote-core.js"></script>
+<script src="js/quicknote.js"></script>
+<script src="js/daily-plan.js"></script>
+<script src="js/support-core.js"></script>
+<script src="js/support.js"></script>
+<script src="js/deals-core.js"></script>
+<script src="js/deals.js"></script>
+<script src="js/cards-core.js"></script>
+<script src="js/cards.js"></script>
+<script src="js/card-alert.js"></script>
+<script src="js/pay-alert.js"></script>
+<script src="js/push.js"></script>
+<script src="js/local-reminders.js"></script>
+<script src="js/app-update.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

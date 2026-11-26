@@ -1,0 +1,70 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>نصب Yane</title><meta name="theme-color" content="#0b4a4a"><link rel="icon" href="icons/favicon.png"><style>@font-face{font-family:'Vazirmatn';src:url('vendor/fonts/Vazirmatn-Regular.woff2') format('woff2');font-weight:400;font-display:swap}@font-face{font-family:'Vazirmatn';src:url('vendor/fonts/Vazirmatn-Medium.woff2') format('woff2');font-weight:500;font-display:swap}@font-face{font-family:'Vazirmatn';src:url('vendor/fonts/Vazirmatn-Bold.woff2') format('woff2');font-weight:700;font-display:swap}
+:root{--t:#0d9488;--td:#0b3b38}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent} html,body{height:auto} a{text-decoration:none;color:inherit}
+body{font-family:'Vazirmatn',sans-serif;background:#071f23;color:#fff;min-height:100%;padding:0;position:relative;overflow-x:hidden}
+.bg{position:fixed;inset:0;background:radial-gradient(520px 320px at 85% -40px,#14b8a6aa,transparent 70%),radial-gradient(480px 360px at -10% 28%,#4f46e5aa,transparent 70%),linear-gradient(180deg,#0b4a4a 0,#0a2f3a 55%,#10213f 100%)}
+.w{position:relative;padding:28px 20px 22px;max-width:430px;margin:auto}
+.top{display:flex;align-items:center;gap:12px}
+.lg{width:46px;height:46px;border-radius:15px;background:#ffffff1c;border:1px solid #ffffff30;display:grid;place-items:center;backdrop-filter:blur(8px)}
+.lg img{width:28px;height:28px}
+.top b{font-size:17px;font-weight:700;letter-spacing:.5px;display:block;line-height:1.2} .top small{font-size:11px;opacity:.72}
+h1{font-size:23px;line-height:1.3;font-weight:700;margin:30px 0 0} h1 em{font-style:normal;background:linear-gradient(90deg,#5eead4,#a5b4fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:13.5px;line-height:2;opacity:.8}
+.seg{display:flex;background:#ffffff14;border:1px solid #ffffff22;border-radius:16px;padding:4px;margin:18px 0 12px}
+.seg button{flex:1;border:0;background:none;color:#ffffffb3;font:inherit;font-size:12.5px;font-weight:500;padding:11px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px}
+.seg button.on{background:#fff;color:var(--td);font-weight:700;box-shadow:0 6px 16px -6px #0006}
+.card{background:#fff;color:#0f172a;border-radius:26px;padding:18px;box-shadow:0 26px 50px -24px #000a}
+.cta{display:flex;align-items:center;justify-content:center;gap:9px;border-radius:14px;padding:13px;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(135deg,#0d9488,#0f766e);box-shadow:0 14px 26px -12px #0d9488}
+.cta.i{background:linear-gradient(135deg,#6366f1,#4338ca);box-shadow:0 14px 26px -12px #4f46e5}
+.chips{display:flex;gap:8px;margin:12px 0 4px;flex-wrap:wrap;justify-content:center}
+.chips span{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:#475569;background:#f1f5f9;border-radius:99px;padding:5px 11px}
+.chips svg{color:#0d9488}
+ol{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:0}
+ol li{display:flex;align-items:flex-start;gap:11px;padding:8px 0;position:relative}
+ol li+li{border-top:1px dashed #e2e8f0}
+.n{flex:none;width:26px;height:26px;border-radius:50%;background:#ccfbf1;color:#0f766e;font-weight:700;font-size:12px;display:grid;place-items:center}
+ol li div{flex:1;min-width:0} ol li b{display:block;font-size:12.5px;font-weight:700} ol li small{display:block;font-size:10.5px;color:#64748b;margin-top:2px;line-height:1.7}
+.si{color:#94a3b8}
+.share{flex-wrap:wrap;margin-top:14px;background:#ffffff12;border:1px solid #ffffff22;border-radius:26px;padding:16px;display:flex;gap:14px;align-items:center}
+.qr{background:#fff;border-radius:18px;padding:9px;flex:none}
+.share>div:nth-child(2){flex:1;min-width:0}.share h3{font-size:14.5px;font-weight:700;margin-bottom:4px} .share p{font-size:11.5px;opacity:.75;line-height:1.9}
+.lnk{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#ffffff1f;border-radius:12px;padding:8px 12px;margin-top:9px;font-size:13px;direction:ltr;font-weight:500;letter-spacing:.3px}
+.lnk2{width:100%;color:#fff;font-family:inherit;cursor:pointer;font-size:12px;display:flex;justify-content:space-between;align-items:center;direction:ltr;margin-top:14px;background:#ffffff14;border:1px solid #ffffff22;border-radius:14px;padding:12px 16px;font-size:13px}.lnk2 b{direction:rtl;font-size:12px;font-weight:500;color:#5eead4}.foot{display:flex;justify-content:center;align-items:center;gap:7px;font-size:10.5px;opacity:.7;margin-top:18px}
+.warn{margin-top:12px;border:1.5px solid #ef4444;background:#fef2f2;border-radius:12px;padding:9px 12px;display:flex;flex-direction:column;gap:2px}.warn b{color:#dc2626;font-size:12px;font-weight:700}.warn span{color:#b91c1c;font-size:11px;line-height:1.7}.hide{display:none}
+</style></head><body><div class="bg"></div><div class="w">
+<div class="top"><div class="lg"><img src="icons/icon-192.png"></div><div><b>Yane</b><small>مدیریت فایل، مشتری و آگهی ملک</small></div></div>
+<h1>نصب <em>Yane</em></h1>
+
+<div class="seg"><button id="ta" class="on">🤖 اندروید</button><button id="ti">🍎 آیفون</button></div>
+<div class="card" id="pa"><a class="cta" id="apk-link" href="https://okwgmfiqbydosocvvoxy.supabase.co/storage/v1/object/public/apk/yane-build9.apk" download="Yane.apk"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>دانلود Yane برای اندروید</a>
+<ol><li><span class="n">۱</span><div><b>دانلود فایل نصب</b><small>دکمه‌ی بالا را بزن. اگر مرورگر پرسید، «دانلود» را تأیید کن.</small></div></li><li><span class="n">۲</span><div><b>فایل را باز کن</b><small>از نوار اعلان یا پوشه‌ی Downloads روی فایل Yane بزن.</small></div></li><li><span class="n">۳</span><div><b>اجازه‌ی نصب بده</b><small>اگر گوشی نصب از این منبع را مجاز ندانست، «تنظیمات» ← «اجازه بده» را بزن و برگرد.</small></div></li><li><span class="n">۴</span><div><b>وارد شو</b><small>اپ را باز کن و با ایمیل و رمز خودت وارد شو.</small></div></li></ol></div>
+<div class="card hide" id="pi"><a class="cta i" href="./"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>باز کردن Yane در Safari</a><div class="warn"><b>در صورتی که لینک باز نشد</b><span>فقط برای نصب آیفون، فیلترشکن را روشن کن.</span></div>
+<ol><li><span class="n">۱</span><div><b>در Safari باز کن</b><small>فقط Safari؛ Chrome و بقیه‌ی مرورگرها نصب را پشتیبانی نمی‌کنند.</small></div></li><li><span class="n">۲</span><div><b>Share را بزن</b><small>مربعِ فلش‌دار پایین صفحه. اگر دیده نشد، صفحه را کمی بالا بکش.</small></div></li><li><span class="n">۳</span><div><b>Add to Home Screen</b><small>گزینه را پیدا کن و بالای صفحه «Add» را بزن.</small></div></li><li><span class="n">۴</span><div><b>از آیکن باز کن</b><small>Yane را از صفحه‌ی اصلی باز کن؛ اعلان‌ها هم فقط از همین آیکن کار می‌کنند.</small></div></li></ol></div>
+<button type="button" class="lnk2" id="cp"><span id="lk" dir="ltr"></span><b id="cpt">کپی لینک</b></button><div class="foot"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>اطلاعات هر حساب جدا و خصوصی است</div>
+</div><script>
+(function(){
+var a=document.getElementById('ta'),i=document.getElementById('ti'),pa=document.getElementById('pa'),pi=document.getElementById('pi');
+function sel(x){a.classList.toggle('on',x==='a');i.classList.toggle('on',x==='i');pa.classList.toggle('hide',x!=='a');pi.classList.toggle('hide',x!=='i');}
+a.onclick=function(){sel('a')};i.onclick=function(){sel('i')};
+var ua=navigator.userAgent||'';
+if(location.hash==='#ios'||/iPhone|iPad|iPod/i.test(ua)||(/Macintosh/i.test(ua)&&navigator.maxTouchPoints>1))sel('i');
+var url=location.origin+location.pathname;document.getElementById('lk').textContent=url.replace(/^https?:\/\//,'');
+document.getElementById('cp').onclick=function(){var t=document.getElementById('cpt');
+ function ok(){t.textContent='کپی شد ✓';setTimeout(function(){t.textContent='کپی لینک'},1800)}
+ try{navigator.clipboard.writeText(url).then(ok,function(){})}catch(e){}};
+})();
+</script><script src="js/config.js"></script>
+<script>
+(function () {
+  try {
+    var c = window.APP_CONFIG || {}, a = document.getElementById('apk-link');
+    if (!a || !c.supabaseUrl || !c.supabaseAnonKey) return;
+    fetch(c.supabaseUrl + '/rest/v1/app_update?select=download_url&limit=1', { headers: { apikey: c.supabaseAnonKey } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (rows) { if (rows && rows[0] && rows[0].download_url) a.href = rows[0].download_url; })
+      .catch(function () {});
+  } catch (e) {}
+})();
+</script>
+</body></html>
